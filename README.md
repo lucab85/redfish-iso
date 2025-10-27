@@ -239,6 +239,8 @@ python idrac_iso_tool.py -H 10.0.0.25 -u root -p calvin -i http://... --eject-fi
 
 ### Connection Timeout
 
+The tool automatically retries on connection errors and read timeouts. If you still experience timeouts on slow networks:
+
 ```bash
 # Increase timeout for slow networks
 python idrac_iso_tool.py -H 10.0.0.25 -u root -p calvin -i http://... --timeout 60
