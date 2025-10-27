@@ -43,7 +43,7 @@ class RedfishClient:
     """Minimal Redfish client for iDRAC operations"""
     
     def __init__(self, host: str, username: str, password: str, 
-                 verify: bool = True, timeout: int = 30, debug: bool = False):
+                 verify: bool = True, timeout: int = 60, debug: bool = False):
         self.base_url = f"https://{host}"
         self.username = username
         self.password = password
@@ -65,8 +65,10 @@ class RedfishClient:
         
         # Retry strategy for transient errors
         retry_strategy = Retry(
-            total=2,
-            backoff_factor=1,
+            total=3,
+            connect=3,
+            read=3,
+            backoff_factor=2,
             status_forcelist=[500, 502, 503, 504],
             allowed_methods=["GET", "POST", "PATCH"]
         )
@@ -322,8 +324,8 @@ Examples:
     # Optional arguments
     parser.add_argument("--insecure", action="store_true",
                         help="Disable SSL certificate verification")
-    parser.add_argument("--timeout", type=int, default=30,
-                        help="Request timeout in seconds (default: 30)")
+    parser.add_argument("--timeout", type=int, default=60,
+                        help="Request timeout in seconds (default: 60)")
     parser.add_argument("--debug", action="store_true",
                         help="Enable debug logging")
     parser.add_argument("--eject-first", action="store_true",
