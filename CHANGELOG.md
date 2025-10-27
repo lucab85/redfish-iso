@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Smart power management: automatically detects server power state
+- Powers on server if off, reboots if already running
+- Power state detection via Redfish API
+
+### Changed
+- `reboot_system()` renamed to `power_on_or_reboot_system()` for clarity
+- Enhanced logging to show power state and appropriate action
+
 ## [1.0.0] - 2025-10-27
 
 ### Added

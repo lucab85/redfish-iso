@@ -275,20 +275,41 @@ def set_onetime_boot(client: RedfishClient, system_id: str = "System.Embedded.1"
         sys.exit(EXIT_API_ERROR)
 
 
-def reboot_system(client: RedfishClient, system_id: str = "System.Embedded.1"):
-    """Reboot the server"""
+def get_power_state(client: RedfishClient, system_id: str = "System.Embedded.1") -> str:
+    """Get current power state of the server"""
+    system_path = f"/redfish/v1/Systems/{system_id}"
+    system_info = client.get(system_path)
+    power_state = system_info.get("PowerState", "Unknown")
+    client.logger.info(f"Current power state: {power_state}")
+    return power_state
+
+
+def power_on_or_reboot_system(client: RedfishClient, system_id: str = "System.Embedded.1"):
+    """Power on or reboot the server based on current state"""
     reset_path = f"/redfish/v1/Systems/{system_id}/Actions/ComputerSystem.Reset"
     
-    # Try reset types in order of preference
-    reset_types = ["ForceRestart", "GracefulRestart", "PowerCycle"]
+    # Check current power state
+    power_state = get_power_state(client, system_id)
     
+    # Determine appropriate action based on power state
+    if power_state.lower() == "off":
+        client.logger.info("Server is powered off, executing startup from CD...")
+        reset_types = ["On"]
+    else:
+        client.logger.info("Server is powered on, executing reboot...")
+        reset_types = ["ForceRestart", "GracefulRestart", "PowerCycle"]
+    
+    # Try reset types in order of preference
     for reset_type in reset_types:
         client.logger.info(f"Requesting {reset_type}...")
         payload = {"ResetType": reset_type}
         resp = client.post(reset_path, payload)
         
         if resp.status_code in [200, 202, 204]:
-            client.logger.info(f"Reboot initiated ({reset_type})")
+            if power_state.lower() == "off":
+                client.logger.info(f"Server powered on ({reset_type})")
+            else:
+                client.logger.info(f"Reboot initiated ({reset_type})")
             return
         elif resp.status_code == 400:
             client.logger.debug(f"{reset_type} not supported, trying next...")
@@ -387,8 +408,8 @@ Examples:
         # Set one-time boot
         set_onetime_boot(client, args.system_id)
         
-        # Reboot
-        reboot_system(client, args.system_id)
+        # Power on or reboot based on current state
+        power_on_or_reboot_system(client, args.system_id)
         
         client.logger.info("✓ Done. Host will boot from virtual CD on next POST.")
         sys.exit(EXIT_SUCCESS)

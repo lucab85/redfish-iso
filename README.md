@@ -13,6 +13,7 @@ Perfect for automating remote OS installations, rescue boots, and bare-metal pro
 - 🎯 **Smart discovery** - Automatically finds the correct VirtualMedia endpoint
 - ⚡ **Fast execution** - Completes in seconds with proper error handling
 - 🛡️ **Exit codes** - Scriptable with standard exit codes
+- 💡 **Smart power management** - Automatically powers on if server is off, reboots if on
 
 ## Requirements
 
@@ -195,13 +196,17 @@ python idrac_iso_tool.py \
 3. **Check State** - Verifies current media status (ejects if `--eject-first`)
 4. **Insert ISO** - Mounts the ISO from the provided HTTP(S) URL
 5. **Set Boot** - Configures one-time boot override to CD
-6. **Reboot** - Issues ForceRestart (or GracefulRestart/PowerCycle)
-7. **Verify** - Waits for confirmation (unless `--no-wait`)
+6. **Check Power State** - Determines if server is powered on or off
+7. **Power On/Reboot** - Powers on (if off) or reboots (if on) the server
+8. **Verify** - Waits for confirmation (unless `--no-wait`)
+
+> **Smart Power Management**: The tool automatically detects the server's power state. If the server is powered off, it executes a startup from CD. If the server is already running, it performs a reboot.
 
 ## Redfish API Endpoints Used
 
 ```
 GET  /redfish/v1
+GET  /redfish/v1/Systems/System.Embedded.1
 GET  /redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia
 GET  /redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD
 POST /redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD/Actions/VirtualMedia.InsertMedia
