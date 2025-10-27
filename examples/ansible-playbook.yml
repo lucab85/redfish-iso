@@ -1,0 +1,35 @@
+---
+# Ansible Playbook Example
+# Usage: ansible-playbook -i inventory.yml provision-servers.yml
+
+- name: Provision Dell PowerEdge Servers with ISO
+  hosts: idrac_servers
+  gather_facts: no
+  vars:
+    iso_url: "http://repo.local/ubuntu-22.04-autoinstall.iso"
+    idrac_timeout: 60
+
+  tasks:
+    - name: Mount ISO and reboot server
+      command: >
+        python3 /path/to/idrac_iso_tool.py
+        -H {{ inventory_hostname }}
+        -u {{ idrac_user }}
+        -p {{ idrac_password }}
+        -i {{ iso_url }}
+        --eject-first
+        --insecure
+      register: result
+      changed_when: result.rc == 0
+      failed_when: result.rc not in [0]
+      delegate_to: localhost
+
+    - name: Display result
+      debug:
+        msg: "Server {{ inventory_hostname }} is rebooting to ISO"
+      when: result.rc == 0
+
+    - name: Wait for server to start installation
+      wait_for:
+        timeout: 120
+      delegate_to: localhost

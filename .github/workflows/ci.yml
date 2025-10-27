@@ -1,0 +1,75 @@
+# GitHub Actions workflow for testing and validation
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    name: Lint and Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pylint mypy types-requests
+          pip install -r requirements.txt
+      
+      - name: Lint with pylint
+        run: |
+          pylint --disable=all --enable=E,F idrac_iso_tool.py || true
+      
+      - name: Type check with mypy
+        run: |
+          mypy --ignore-missing-imports idrac_iso_tool.py || true
+
+  test-syntax:
+    name: Python Syntax Check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Check syntax
+        run: |
+          python -m py_compile idrac_iso_tool.py
+      
+      - name: Test help output
+        run: |
+          python idrac_iso_tool.py --help
+
+  test-docker:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Build Docker image
+        run: |
+          docker build -t idrac-iso-tool:test .
+      
+      - name: Test Docker container
+        run: |
+          docker run --rm idrac-iso-tool:test --help
