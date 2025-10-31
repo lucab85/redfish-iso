@@ -65,7 +65,9 @@ class RedfishClient:
         
         # Retry strategy for transient errors
         retry_strategy = Retry(
-            total=2,
+            total=3,
+            read=2,
+            connect=2,
             backoff_factor=1,
             status_forcelist=[500, 502, 503, 504],
             allowed_methods=["GET", "POST", "PATCH"]
