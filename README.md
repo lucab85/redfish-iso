@@ -119,7 +119,7 @@ python idrac_iso_tool.py \
 |--------|-------------|---------|
 | `-p`, `--password` | iDRAC password (prompts if omitted) | - |
 | `--insecure` | Disable SSL certificate verification | False |
-| `--timeout` | Request timeout in seconds | 30 |
+| `--timeout` | Request timeout in seconds | 60 |
 | `--debug` | Enable debug logging | False |
 | `--eject-first` | Force eject existing media before insert | False |
 | `--no-wait` | Don't wait for status confirmation | False |
@@ -245,8 +245,8 @@ python idrac_iso_tool.py -H 10.0.0.25 -u root -p calvin -i http://... --eject-fi
 ### Connection Timeout
 
 ```bash
-# Increase timeout for slow networks
-python idrac_iso_tool.py -H 10.0.0.25 -u root -p calvin -i http://... --timeout 60
+# Increase timeout for very slow networks (default is now 60 seconds)
+python idrac_iso_tool.py -H 10.0.0.25 -u root -p calvin -i http://... --timeout 120
 ```
 
 ### Debug Output
